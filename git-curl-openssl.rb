@@ -4,8 +4,9 @@
 class GitCurlOpenssl < Formula
   desc "Distributed revision control system"
   homepage "https://git-scm.com"
-  url "https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.33.0.tar.xz"
-  sha256 "bf3c6ab5f82e072aad4768f647cfb1ef60aece39855f83f080f9c0222dd20c4f"
+  url "https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.35.1.tar.xz"
+  sha256 "d768528e6443f65a203036266f1ca50f9d127ba89751e32ead37117ed9191080"
+  license "GPL-2.0-only"
   head "https://github.com/git/git.git", shallow: false
 
   livecheck do
@@ -13,26 +14,26 @@ class GitCurlOpenssl < Formula
     regex(/href=.*?git[._-]v?(\d+(?:\.\d+)+)\.t/i)
   end
 
-  bottle do
-    sha256 arm64_big_sur: "06e9cc3e274380b2494451ed2e3c6acf1e091facdf2ce02da57921fbc6a3115a"
-    sha256 big_sur:       "1b89ec39f7a4b865b3c671f9b2495ec85992595112b74a5dc3ac78beae33ff0d"
-    sha256 catalina:      "4aaced15f34f02a7a965f9cee42b78ef471034e4d9cf3bbbe8bf2ab8f4f72678"
-    sha256 mojave:        "5e85e4d8c9aaa398420993cb9c2561db79d3a71a12b79b8631ee0de5b0d86c67"
-  end
+  # bottle do
+  #   sha256 arm64_big_sur: "06e9cc3e274380b2494451ed2e3c6acf1e091facdf2ce02da57921fbc6a3115a"
+  #   sha256 big_sur:       "1b89ec39f7a4b865b3c671f9b2495ec85992595112b74a5dc3ac78beae33ff0d"
+  #   sha256 catalina:      "4aaced15f34f02a7a965f9cee42b78ef471034e4d9cf3bbbe8bf2ab8f4f72678"
+  #   sha256 mojave:        "5e85e4d8c9aaa398420993cb9c2561db79d3a71a12b79b8631ee0de5b0d86c67"
+  # end
 
-  depends_on "curl-openssl"
+  depends_on "curl"
   depends_on "gettext"
   depends_on "openssl@1.1"
   depends_on "pcre2"
 
   resource "html" do
-    url "https://mirrors.edge.kernel.org/pub/software/scm/git/git-htmldocs-2.33.0.tar.xz"
-    sha256 "309c5d3cdd9a115f693c0e035298cc867a3b8ba8ce235fa1ac950a48cb4b0447"
+    url "https://mirrors.edge.kernel.org/pub/software/scm/git/git-htmldocs-2.35.1.tar.xz"
+    sha256 "ca2f0bd4a9d24d9b6b3a021f11b8eacee863948c67a4cc0ff6d7adef8137ea18"
   end
 
   resource "man" do
-    url "https://mirrors.edge.kernel.org/pub/software/scm/git/git-manpages-2.33.0.tar.xz"
-    sha256 "d6d38abe3fe45b74359e65d53e51db3aa92d7f551240b7f7a779746f24c4bc31"
+    url "https://mirrors.edge.kernel.org/pub/software/scm/git/git-manpages-2.35.1.tar.xz"
+    sha256 "e4e3a751f2c05959222c3ea2f0f09481700eca8f915d1398bb270eb6846c3803"
   end
 
   resource "Net::SMTP::SSL" do
@@ -79,20 +80,20 @@ class GitCurlOpenssl < Formula
       LDFLAGS=#{ENV.ldflags}
     ]
 
-      openssl_prefix = Formula["openssl@1.1"].opt_prefix
-      args += %W[NO_APPLE_COMMON_CRYPTO=1 OPENSSLDIR=#{openssl_prefix}]
+    openssl_prefix = Formula["openssl@1.1"].opt_prefix
+    args += %W[NO_APPLE_COMMON_CRYPTO=1 OPENSSLDIR=#{openssl_prefix}]
 
     system "make", "install", *args
 
     git_core = libexec/"git-core"
 
     # Install the macOS keychain credential helper
-      cd "contrib/credential/osxkeychain" do
-        system "make", "CC=#{ENV.cc}",
-                       "CFLAGS=#{ENV.cflags}",
-                       "LDFLAGS=#{ENV.ldflags}"
-        git_core.install "git-credential-osxkeychain"
-        system "make", "clean"
+    cd "contrib/credential/osxkeychain" do
+      system "make", "CC=#{ENV.cc}",
+                     "CFLAGS=#{ENV.cflags}",
+                     "LDFLAGS=#{ENV.ldflags}"
+      git_core.install "git-credential-osxkeychain"
+      system "make", "clean"
     end
 
     # Generate diff-highlight perl script executable
@@ -148,7 +149,7 @@ class GitCurlOpenssl < Formula
 
     # Set the macOS keychain credential helper by default
     # (as Apple's CLT's git also does this).
-      (buildpath/"gitconfig").write <<~EOS
+    (buildpath/"gitconfig").write <<~EOS
         [credential]
         \thelper = osxkeychain
     EOS
